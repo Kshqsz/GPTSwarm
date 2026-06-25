@@ -19,9 +19,9 @@ from swarm.llm.llm_registry import LLMRegistry
 
 LM_STUDIO_URL = "http://localhost:1234/v1"
 
-
 load_dotenv()
-OPENAI_API_KEYS=[os.getenv(f"OPENAI_API_KEY")]
+DEFAULT_OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL") or os.getenv("DEEPSEEK_BASE_URL")
+OPENAI_API_KEYS = [os.getenv("OPENAI_API_KEY") or os.getenv("DEEPSEEK_API_KEY")]
 for i in range(10):
     if os.getenv(f"OPENAI_API_KEY{i}"):
         OPENAI_API_KEYS.append(os.getenv(f"OPENAI_API_KEY{i}"))
@@ -43,7 +43,13 @@ def gpt_chat(
         api_kwargs = dict(base_url=LM_STUDIO_URL)
     else:
         api_key = random.sample(OPENAI_API_KEYS, 1)[0]
+        if not api_key:
+            raise ValueError(
+                "Missing API key. Set OPENAI_API_KEY or DEEPSEEK_API_KEY in your .env file."
+            )
         api_kwargs = dict(api_key=api_key)
+        if DEFAULT_OPENAI_BASE_URL:
+            api_kwargs["base_url"] = DEFAULT_OPENAI_BASE_URL
     client = OpenAI(**api_kwargs)
 
     formated_messages = [asdict(message) for message in messages]
@@ -82,7 +88,13 @@ async def gpt_achat(
         api_kwargs = dict(base_url=LM_STUDIO_URL)
     else:
         api_key = random.sample(OPENAI_API_KEYS, 1)[0]
+        if not api_key:
+            raise ValueError(
+                "Missing API key. Set OPENAI_API_KEY or DEEPSEEK_API_KEY in your .env file."
+            )
         api_kwargs = dict(api_key=api_key)
+        if DEFAULT_OPENAI_BASE_URL:
+            api_kwargs["base_url"] = DEFAULT_OPENAI_BASE_URL
     aclient = AsyncOpenAI(**api_kwargs)
 
     formated_messages = [asdict(message) for message in messages]
